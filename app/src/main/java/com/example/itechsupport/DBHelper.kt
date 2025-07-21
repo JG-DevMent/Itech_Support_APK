@@ -20,6 +20,28 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
         private const val COL_ROLE = "role"
     }
 
+    init {
+        ensureAdminUserExists()
+    }
+
+    private fun ensureAdminUserExists() {
+        val db = this.writableDatabase
+        val cursor = db.rawQuery("SELECT * FROM $TABLE_USERS WHERE $COL_USERNAME = ?", arrayOf("admin"))
+        val exists = cursor.count > 0
+        cursor.close()
+        if (!exists) {
+            val values = ContentValues().apply {
+                put(COL_USERNAME, "admin")
+                put(COL_EMAIL, "admin@admin.com")
+                put(COL_PASSWORD, "admin")
+                put(COL_PHONE, "")
+                put(COL_ROLE, "admin")
+            }
+            db.insert(TABLE_USERS, null, values)
+        }
+        db.close()
+    }
+
     override fun onCreate(db: SQLiteDatabase) {
         val createTable = "CREATE TABLE $TABLE_USERS (" +
                 "$COL_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
